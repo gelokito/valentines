@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Be My Valentine 💖</title>
+
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
+    font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+
+  /* Background carousel */
+  #carouselContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  #carouselContainer img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: black;
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
+  }
+
+  #carouselContainer img.active {
+    opacity: 1;
+  }
+
+  /* Card */
+  .card {
+    background: rgba(255,255,255,0.85);
+    width: 90%;
+    max-width: 380px;
+    padding: 25px 20px 30px;
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  h1 { color: #d6336c; margin-bottom: 10px; }
+  h2 { color: #c2255c; font-size: 20px; margin-bottom: 20px; }
+
+  .buttons { position: relative; height: 120px; }
+
+  button {
+    padding: 14px 24px;
+    font-size: 18px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  button:active { transform: scale(0.95); }
+
+  #yes {
+    background: #ff4d6d;
+    color: white;
+    box-shadow: 0 8px 20px rgba(255,77,109,0.5);
+  }
+
+  #no {
+    background: #dee2e6;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 60px;
+  }
+
+  /* Scrollable message */
+  #message {
+  display: none;
+  margin-top: 20px;
+  max-height: 55vh;        /* 👈 enables scrolling */
+  overflow-y: auto;       /* 👈 scroll */
+  padding: 10px;
+  font-size: 16px;
+  color: #d6336c;
+  text-align: justify;    /* 👈 justified text */
+  line-height: 1.6;
+  animation: pop 0.5s ease;
+}
+
+
+  #message::-webkit-scrollbar {
+    width: 6px;
+  }
+  #message::-webkit-scrollbar-thumb {
+    background: #ff7aa2;
+    border-radius: 10px;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Floating hearts */
+  .heart {
+    position: absolute;
+    color: #ff4d6d;
+    font-size: 18px;
+    animation: float 6s linear infinite;
+    opacity: 0.8;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-800px) scale(1.5); opacity: 0; }
+  }
+
+  #musicContainer { display: none; }
+</style>
+</head>
+
+<body>
+
+<!-- Background carousel -->
+<div id="carouselContainer">
+  <img src="IMG_7442.JPEG" class="active">
+  <img src="IMG_7494.JPEG">
+  <img src="IMG_8336.JPEG">
+  <img src="IMG_6801.jpg">
+  <img src="att.4EUIszvf9HHqVp9JA5wEW_vDiStvi0iPzBXJNM3MkWg.JPEG">
+  <img src="att.kph3ZpPFiG0d4xjKX9DU6v20VE1WSsbXJbHn79VqFJ0.JPEG">
+  <img src="att.Mz0yi4wysTZBgO0Rau6Cg6726n6mdu3pTV_5VfyXO2U.JPEG">
+  <img src="att.w2OrcDswMxQGR2117qM12I7W5vBjThEwWqpaArJva8c.JPEG">
+  <img src="att.xEMm5E6m5Jwuhk8UxPr6o7CAaIBOWNU4dhN7wbZyA_4.JPEG">
+  <img src="att.zpQXbYEjreDw11rwoIRRzN4J_LrDjLXHRT74Z9YTeRE.JPEG">
+</div>
+
+<div class="card">
+
+  <div id="musicContainer">
+    <audio id="bgMusic" src="same, same.mp3" loop></audio>
+  </div>
+
+  <h1>Saira 💖</h1>
+  <h2>Will you be my Valentine?</h2>
+
+  <div class="buttons">
+    <button id="yes">Yes 💕</button>
+    <button id="no">No 😢</button>
+  </div>
+
+  <!-- Message loaded via fetch -->
+  <div id="message"></div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const noBtn = document.getElementById("no");
+  const yesBtn = document.getElementById("yes");
+  const msg = document.getElementById("message");
+  const card = document.querySelector(".card");
+  const music = document.getElementById("bgMusic");
+
+  // Autoplay music (allowed after interaction)
+  music.play().catch(() => {
+    document.body.addEventListener("click", () => music.play(), { once: true });
+  });
+
+  // Fetch message text (will work once published)
+  fetch("message.txt")
+    .then(res => res.text())
+    .then(text => {
+      msg.innerHTML = text.replace(/\n/g, "<br><br>");
+    })
+    .catch(err => {
+      msg.innerHTML = "Message failed to load 💔";
+      console.error(err);
+    });
+
+  // No button escape
+  noBtn.addEventListener("mouseover", moveNo);
+  noBtn.addEventListener("click", moveNo);
+
+  function moveNo() {
+    const maxX = card.clientWidth - noBtn.clientWidth;
+    const maxY = 100;
+    noBtn.style.left = Math.random() * maxX + "px";
+    noBtn.style.top = Math.random() * maxY + "px";
+  }
+
+  // Yes button
+  yesBtn.addEventListener("click", () => {
+    msg.style.display = "block";
+    yesBtn.style.display = "none";
+    noBtn.style.display = "none";
+    createHearts();
+  });
+
+  function createHearts() {
+    for (let i = 0; i < 25; i++) {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.innerHTML = "💖";
+      heart.style.left = Math.random() * window.innerWidth + "px";
+      heart.style.bottom = "-20px";
+      heart.style.animationDuration = (3 + Math.random() * 3) + "s";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
+    }
+  }
+
+  // Carousel
+  const images = document.querySelectorAll("#carouselContainer img");
+  let current = 0;
+  setInterval(() => {
+    images[current].classList.remove("active");
+    current = (current + 1) % images.length;
+    images[current].classList.add("active");
+  }, 5000);
+});
+</script>
+
+</body>
+</html>
